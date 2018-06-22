@@ -14,3 +14,4 @@ def clamp(input):
         return input
     else:
         return 1
+
