@@ -24,11 +24,19 @@ class BMPColor:
 
 def saveBitmap(w,h,arrBitMap,fileName):
     #将元素类型更改为'uint8'
-    arrBitMap=np.reshape(arrBitMap,(h,w))
-    arrBitMap=np.array(arrBitMap,dtype='uint8')
-    arrBitMap=Image.fromarray(arrBitMap)
+    arrBitMap_color=[]
+    for i in range(len(arrBitMap)):
+        arrBitMap_color.append(arrBitMap[i].b)
+        arrBitMap_color.append(arrBitMap[i].g)
+        arrBitMap_color.append(arrBitMap[i].r)
+        arrBitMap_color.append(arrBitMap[i].a)
+    arrBitMap_color=np.array(arrBitMap_color)
+
+    arrBitMap_color=np.reshape(arrBitMap_color,(h,w,4))
     #第一个参数为存储的地址和名称，第二个参数为存储的图片类型
-    arrBitMap.save(fileName,'bmp')
+    image=Image.fromarray(arrBitMap_color.astype(np.uint8))
+    image.save(fileName,"bmp")
+    
 
 
 if __name__=="__main__":

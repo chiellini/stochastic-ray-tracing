@@ -6,15 +6,14 @@ from time import time
 import math as mt
 
 #分辨率
-iResolution=md.Vector2(100,100)
+iResolution=md.Vector2(800,640)
 #采样点个数
 SUB_SAMPLES=2
 #最大深度
-MAX_DEPTH=64
+MAX_DEPTH=4
 #最大样本循环
-MAX_SAMPLE_LOOP=4
+MAX_SAMPLE_LOOP=1
 RESAMPLE_VALVE=1e-6
-MAX_THREAD=4
 #gama值
 GAMMA=2.2
 
@@ -63,20 +62,29 @@ NUM_PLANES=6	#平面数量
 spheres=[]
 planes=[]
 
-def initScene():
-    spheres.append(md.Sphere(16.5,md.Vector3(27,16.5,47),md.Material(md.SPEC,md.ZERO_VECTOR3,md.ONE_VECTOR3,0.)))
-    spheres.append(md.Sphere(16.5,md.Vector3(73,16.5,78),md.Material(md.REFR,md.ZERO_VECTOR3, md.Vector3(.75,1.,.75), 1.5)))
-    spheres.append(md.Sphere(5, md.Vector3(50,70,50), md.Material(md.DIFF, md.Vector3(5.7,5.7,5.7),md.ZERO_VECTOR3,0.)))
-    spheres.append(md.Sphere(14, md.Vector3(50, 14, 60), md.Material(md.REFR,md.ZERO_VECTOR3, md.Vector3(0.5, 0.5, 0.), 2)))
-    spheres.append(md.Sphere(12, md.Vector3(92, 35, 65), md.Material(md.REFR, md.ZERO_VECTOR3, md.Vector3(0.5, 0.5, 1.), 4)))
-    spheres.append(md.Sphere(18, md.Vector3(8, 25, 80), md.Material(md.SPEC, md.ZERO_VECTOR3, md.Vector3(1., 0.5, 0.5), 2)))
 
-    planes.append(md.Plane(md.Vector3(0, 0, 0),md.Vector3(0, 1, 0), md.Material(md.DIFF,md.ZERO_VECTOR3, md.ONE_VECTOR3, 0.)))
-    planes.append(md.Plane(md.Vector3(-7, 0, 0),md.Vector3(1, 0, 0), md.Material(md.DIFF,md.ZERO_VECTOR3,md.Vector3(.75, .25, .25), 0.)))
-    planes.append(md.Plane(md.Vector3(0,0,0), md.Vector3(0, 0, -1), md.Material(md.SPEC, md.ZERO_VECTOR3, md.Vector3(.75, .75, .75), 0.)))
-    planes.append(md.Plane(md.Vector3(107, 0, 0), md.Vector3(-1, 0, 0), md.Material(md.SPEC, md.ZERO_VECTOR3, md.Vector3(.75, .75, 1), 0.)))
-    planes.append(md.Plane(md.Vector3(0, 0, 185), md.Vector3(0, 0, 1), md.Material(md.SPEC, md.ZERO_VECTOR3, md.Vector3(1, 1, .75), 0.)))
-    planes.append(md.Plane(md.Vector3(0, 90, 0), md.Vector3(0, -1, 0), md.Material(md.DIFF, md.ZERO_VECTOR3, md.Vector3(.75,.75,.75), 0.)))
+
+def initScene():
+    
+    for i in range(NUM_SPHERES):
+        spheres.append(md.Sphere(i))
+
+    for i in range(NUM_PLANES):
+        planes.append(md.Plane())
+
+    spheres[0].setSelf(md.Sphere(16.5,md.Vector3(27,16.5,47),md.Material(md.SPEC,md.ZERO_VECTOR3,md.ONE_VECTOR3,0.)))
+    spheres[1].setSelf(md.Sphere(16.5,md.Vector3(73,16.5,78),md.Material(md.DIFF,md.ZERO_VECTOR3, md.Vector3(.75,1.,.75), 1.5)))
+    spheres[2].setSelf(md.Sphere(5, md.Vector3(50,70,50), md.Material(md.SPEC, md.Vector3(5.7,5.7,5.7),md.ZERO_VECTOR3,0.)))
+    spheres[3].setSelf(md.Sphere(14, md.Vector3(50, 14, 60), md.Material(md.SPEC,md.ZERO_VECTOR3, md.Vector3(0.5, 0.5, 0.), 2)))
+    spheres[4].setSelf(md.Sphere(12, md.Vector3(92, 35, 65), md.Material(md.SPEC, md.ZERO_VECTOR3, md.Vector3(0.5, 0.5, 1.), 4)))
+    spheres[5].setSelf(md.Sphere(18, md.Vector3(8, 25, 80), md.Material(md.SPEC, md.ZERO_VECTOR3, md.Vector3(1., 0.5, 0.5), 2)))
+
+    planes[0].setSelf(md.Plane(md.Vector3(0, 0, 0),md.Vector3(0, 1, 0), md.Material(md.DIFF,md.ZERO_VECTOR3, md.ONE_VECTOR3, 0.)))
+    planes[1].setSelf(md.Plane(md.Vector3(-7, 0, 0),md.Vector3(1, 0, 0), md.Material(md.DIFF,md.ZERO_VECTOR3,md.Vector3(.75, .25, .25), 0.)))
+    planes[2].setSelf(md.Plane(md.Vector3(0,0,0), md.Vector3(0, 0, -1), md.Material(md.SPEC, md.ZERO_VECTOR3, md.Vector3(.75, .75, .75), 0.)))
+    planes[3].setSelf(md.Plane(md.Vector3(107, 0, 0), md.Vector3(-1, 0, 0), md.Material(md.SPEC, md.ZERO_VECTOR3, md.Vector3(.75, .75, 1), 0.)))
+    planes[4].setSelf(md.Plane(md.Vector3(0, 0, 185), md.Vector3(0, 0, 1), md.Material(md.DIFF, md.ZERO_VECTOR3, md.Vector3(1, 1, .75), 0.)))
+    planes[5].setSelf(md.Plane(md.Vector3(0, 90, 0), md.Vector3(0, -1, 0), md.Material(md.DIFF, md.ZERO_VECTOR3, md.Vector3(.75,.75,.75), 0.)))
 
 def backgroud(dir):
     return md.ZERO_VECTOR3
@@ -86,53 +94,54 @@ def intersectByRay(ray):
     id=-1
     t=1e5#初始化为无限远
     for i in range(NUM_SPHERES):
-        d=ray.IntersectWithSphere(spheres[i])
+        d=float(ray.IntersectWithSphere(spheres[i]))
         if d != 0. and d<t:
             id=i
             t=d
     
     for i in range(NUM_PLANES):
-        d=ray.IntersectWithPlane(planes[i])
+        d=float(ray.IntersectWithPlane(planes[i]))
         if d != 0. and d<t:
             t=d
 
     return id
 
 def intersectWithAll(ray,t,normal,mat,nextPoint):
-    id = -1
+    id=-1
     isIdOfSphere=False
-    t=float(1e5)#初始化为无限远
+    t_=t
+    t_.setSelf(1e5)#初始化为无限远
 
     for i in range(NUM_SPHERES):
         d=ray.IntersectWithSphere(spheres[i])
-        if d!=0. and d<t:
+        if d!=0. and d<t_.x:
             id=i
             isIdOfSphere=True
-            t=d
+            t_.setSelf(d)
     
     for i in range(NUM_PLANES):
         d=ray.IntersectWithPlane(planes[i])
-        if d!=0. and d<t:
+        if d!=0. and d<t_.x:
             id =i
             isIdOfSphere=False
-            t=d
+            t_.setSelf(d)
 
     if id>=0:
-        nextPoint.setSelf(ray.origin+ray.dir.MultipleDecimal(t))
+        nextPoint.setSelf(ray.origin+ray.dir.MultipleDecimal(t_.x))
         if isIdOfSphere:
             normal.setSelf((nextPoint-spheres[id].pos).normalized())
-            mat.setSelf(spheres[i].mat)
+            mat.setSelf(spheres[id].mat)
         else:
             normal.setSelf(planes[id].normal)
             mat.setSelf(planes[id].mat)
     
     return id
 
-camPos=md.Vector3(50.,40.8,172.)
+camPos=md.Vector3(80.,40.8,172.)
 cz=md.FORWARD_VECTOR3
 cx=md.LEFT_VECTOR3
 cy=md.UP_VECTOR3
-aspectRatio=(iResolution.x)/(iResolution.y)
+aspectRatio=(float(iResolution.x))/(iResolution.y)
 omegaRate=(1.0)/(mt.pi*0.5*(mt.pi*0.5-1))
 
 #辐射度计算，即对应的灰度
@@ -147,7 +156,7 @@ def trace(u,v):
     reflectance=md.Vector3()
     reflectance.setSelf(md.ONE_VECTOR3)
     #相交处距离
-    t=0.0
+    t=md.Float(0.)
     #相交面法线
     n=md.Vector3()
     #相交点
@@ -210,7 +219,7 @@ def trace(u,v):
                 sv=md.Vector3()
                 sv.setSelf(md.vector3_instance.Cross(sw,su))
 
-                cos_a_max=mt.sqrt(1-((s.MultipleDecimal(s.radius)).radius/centerL.sqrtMagnitude()))
+                cos_a_max=mt.sqrt(1-(s.radius**2)/centerL.sqrtMagnitude())
                 cos_a=1-random()*(1-cos_a_max)
                 sin_a=mt.sqrt(1-cos_a**2)
                 phi=2*mt.pi*random()
@@ -219,7 +228,7 @@ def trace(u,v):
                 l=su.MultipleDecimal(mt.cos(phi)*sin_a)+sv.MultipleDecimal(mt.sin(phi)*sin_a)+sw.MultipleDecimal(cos_a)
                 l.Normalize()#自身归一化
 
-                if intersectByRay(md.Ray(nPoint,l))==i:
+                if intersectByRay(md.Ray(nPoint+l.MultipleDecimal(md.RAY_EPSILON),l))==i:
                     omega=mt.pi*(1-cos_a_max**2)*omegaRate
                     dot=md.vector3_instance.Dot(l,n1_)
                     radiance.setSelf(radiance+reflectance.MultipleVector3(s.mat.emission.MultipleDecimal(dot*omega)))
@@ -250,7 +259,7 @@ def trace(u,v):
                 R0=(ior-1)/(ior+1)
                 R0*=R0
                 #1 - cosθ
-                c=1-(ddn.MultipleDecimal(-1) if into else md.vector3_instance.Dot(tdir,n))
+                c=1-(ddn*(-1) if into else md.vector3_instance.Dot(tdir,n))
                 #菲涅尔项
                 Re=R0+(1.0-R0)*(c**5)
                 #反射概率
@@ -297,9 +306,9 @@ def mainImage(fragCoord):
     return color
 
 def toBMPColor(dest,input):
-    dest.r=(basef.clamp(mt.pow(input.x, 1 / GAMMA)) * 255 + 0.5)
-    dest.g=(basef.clamp(mt.pow(input.y, 1 / GAMMA)) * 255 + 0.5)
-    dest.b=(basef.clamp(mt.pow(input.z, 1 / GAMMA)) * 255 + 0.5)
+    dest.r=(basef.clamp(input.x**(1 / GAMMA)) * 255 + 0.5)
+    dest.g=(basef.clamp(input.y**(1 / GAMMA)) * 255 + 0.5)
+    dest.b=(basef.clamp(input.z**(1 / GAMMA)) * 255 + 0.5)
 
 
     
@@ -318,17 +327,20 @@ def main():
     grayPoint=0
 
     spp=SUB_SAMPLES**2
-    for y in range(iResolution.y):
-        print("\r\rRendering"+"   "+str(spp)+"   "+str(100.*y / (iResolution.y - 1))+"%",end="") 
+    y=0
+    while y<iResolution.y :
+        print("\r\rRendering"+"   "+str(spp)+"   "+str(100.*y / (iResolution.y - 1))+"%"+"              ",end="") 
         for x in range(iResolution.x):
-            c=mainImage(md.Vector2( (float(x))/iResolution.x, (float(y))/iResolution.y))
+            fragCoordd = md.Vector2( (float(x))/iResolution.x, (float(iResolution.y-1-y))/iResolution.y)
+            c=mainImage(fragCoordd)
             if c.sum()<md.EPSILON:
                 blackPoint=blackPoint+1
             if c.sum()<md.RAY_EPSILON:
                 grayPoint=grayPoint+1
             toBMPColor(bmpColors[y*iResolution.x+x],c)
+        y=y+1
 
-    bmp.saveBitmap(iResolution.x,iResolution.y,bmpColors,"output.bmp")
+    bmp.saveBitmap(iResolution.x,iResolution.y,bmpColors,"output-specmost-2.bmp")
 
     timer=time()-timer
     print("\nsuccess!\nuse time:\t"+str(timer)+" s")

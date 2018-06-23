@@ -1,7 +1,16 @@
-from math import sqrt
-
+from math import *
 
 __author__="lizelin"
+
+class Float:
+    x=0.
+    def __init__(self,x):
+        self.x=x
+
+    def setSelf(self,x):
+        self.x=x
+        return self
+
 
 class Vector3:
     x=0.0
@@ -16,6 +25,7 @@ class Vector3:
         self.x=targetVector3.x
         self.y=targetVector3.y
         self.z=targetVector3.z
+        return self
         
     """
     以下为操作符重载
@@ -162,7 +172,7 @@ vector2_instance=Vector2()
 
 
 #全局常量
-EPSILON=1e-6
+EPSILON=1e-4
 RAY_EPSILON=1e-3
 
 
@@ -179,14 +189,14 @@ class Material:
 
     def __init__(self,refl=0,emission=Vector3(),color=Vector3(),ior=0.0):
         self.refl=refl
-        self.emission=emission
-        self.color=color
+        self.emission=Vector3(emission.x,emission.y,emission.z)
+        self.color=Vector3(color.x,color.y,color.z)
         self.ior=ior
 
     def setSelf(self,dataMat):
         self.refl=dataMat.refl
-        self.emission=dataMat.emission
-        self.color=dataMat.color
+        self.emission.setSelf(dataMat.emission)
+        self.color.setSelf(dataMat.color)
         self.ior=dataMat.ior
 
 
@@ -197,8 +207,8 @@ class Sphere:
 
     def __init__(self,radius=0.0,pos=Vector3(),mat=Material()):
         self.radius=radius
-        self.pos.setSelf(pos)
-        self.mat.setSelf(mat)
+        self.pos=Vector3(pos.x,pos.y,pos.z)
+        self.mat=Material(mat.refl,mat.emission,mat.color,mat.ior)
 
     def setSelf(self,data):
         self.radius=data.radius
@@ -212,9 +222,11 @@ class Plane:
     mat=Material()
 
     def __init__(self,pos=Vector3(),normal=Vector3(),mat=Material()):
-        self.pos.setSelf(pos)
-        self.normal.setSelf(normal)
-        self.mat.setSelf(mat)
+        self.pos=Vector3(pos.x,pos.y,pos.z)
+        self.normal=Vector3(normal.x,normal.y,normal.z)
+        self.mat=Material(mat.refl,mat.emission,mat.color,mat.ior)
+
+
     def setSelf(self,data):
         self.pos.setSelf(data.pos)
         self.normal.setSelf(data.normal)
@@ -226,20 +238,20 @@ class Ray:
     dir=Vector3()
 
     def __init__(self,origin=Vector3(),direction=Vector3()):
-        self.origin.setSelf(origin)
-        self.dir.setSelf(direction)
+        self.origin=Vector3(origin.x,origin.y,origin.z)
+        self.dir=Vector3(direction.x,direction.y,direction.z)
 
     def setSelf(self,data):
         self.origin.setSelf(data.origin)
         self.dir.setSelf(data.dir)
 
     def IntersectWithSphere(self,sphere):
-        op=sphere.pos.MinusVector3(self.origin)
+        op=sphere.pos-self.origin
         b=vector3_instance.Dot(op,self.dir)
 
         delta=b*b-vector3_instance.Dot(op,op)+sphere.radius*sphere.radius
         if(delta<0):
-            return int(0)
+            return 0
         else:
             delta=sqrt(delta)
         
@@ -249,7 +261,7 @@ class Ray:
         elif (b+delta)>EPSILON:
             return (b+delta)
         else:
-            return distance
+            return 0
     
     def IntersectWithPlane(self,plane):
         t=vector3_instance.Dot((plane.pos.MinusVector3(self.origin)),plane.normal)/vector3_instance.Dot(self.dir,plane.normal)
