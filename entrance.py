@@ -8,7 +8,7 @@ import math as mt
 #分辨率
 iResolution=md.Vector2(800,640)
 #采样点个数
-SUB_SAMPLES=2
+SUB_SAMPLES=4
 #最大深度
 MAX_DEPTH=4
 #最大样本循环
