@@ -8,7 +8,7 @@ import math as mt
 #分辨率
 iResolution=md.Vector2(800,640)
 #采样点个数
-SUB_SAMPLES=4
+SUB_SAMPLES=2
 #最大深度
 MAX_DEPTH=4
 #最大样本循环
@@ -86,8 +86,8 @@ def initScene():
     planes[4].setSelf(md.Plane(md.Vector3(0, 0, 185), md.Vector3(0, 0, 1), md.Material(md.DIFF, md.ZERO_VECTOR3, md.Vector3(1, 1, .75), 0.)))
     planes[5].setSelf(md.Plane(md.Vector3(0, 90, 0), md.Vector3(0, -1, 0), md.Material(md.DIFF, md.ZERO_VECTOR3, md.Vector3(.75,.75,.75), 0.)))
 
-def backgroud(dir):
-    return md.ZERO_VECTOR3
+# def backgroud(dir):
+#     return md.ZERO_VECTOR3
 
 #光线与球相交，找到相交的球，返回相交球的ID(没找到返回-1)
 def intersectByRay(ray):
@@ -169,7 +169,7 @@ def trace(u,v):
         
         #如果没有和物体相交，返回背景的辐射度
         if intersectWithAll(ray,t,n,mat,nPoint)<0:
-            radiance.setSelf(radiance+reflectance.MultipleVector3(backgroud(ray.dir)))
+            radiance.setSelf(radiance+reflectance.MultipleVector3(md.ZERO_VECTOR3))
             break
         
         #累加这一次的辐射度
